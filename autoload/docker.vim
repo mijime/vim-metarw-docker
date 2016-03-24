@@ -9,3 +9,7 @@ func! docker#docker(...) abort
 
   return l:res
 endf
+
+func! docker#apply(...) abort
+  return call('docker#docker', a:000[0] + a:000[1:])
+endf

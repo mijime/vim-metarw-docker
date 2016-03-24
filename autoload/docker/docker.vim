@@ -1,13 +1,19 @@
-func! docker#docker#cp(...)
-  let l:src = get(a:, 1, '-')
-  let l:dst = get(a:, 2, '-')
+function! docker#docker#cp(...)
+  return docker#apply(['cp'] + a:000)
+endfunction
 
-  return docker#docker('cp', l:src, l:dst)
-endf
+function! docker#docker#images(...)
+  return map(split(docker#apply(['images'] + a:000), '\n'), 'split(v:val, "   *")')
+endfunction
 
-func! docker#docker#cpDir(...)
-  let l:src = get(a:, 1, '-')
-  let l:dst = get(a:, 2, tempname())
+function! docker#docker#ps(...)
+  return map(split(docker#apply(['ps'] + a:000), '\n'), 'split(v:val, "   *")')
+endfunction
 
-  return docker#docker('cp', l:src, '-', '>', l:dst)
-endf
+function! docker#docker#exec(...)
+  return docker#apply(['exec'] + a:000)
+endfunction
+
+function! docker#docker#ls(container, path)
+  return split(docker#docker('exec', a:container, 'ls', '-a', a:path), '\n')
+endfunction
