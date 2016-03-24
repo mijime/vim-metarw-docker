@@ -26,17 +26,3 @@ func! test#docker#catch_err(...) abort
     throw 'non catched error'
   end
 endf
-
-func! test#docker#read(...) abort
-  call test#echo('can be read from docker container')
-  call test#docker#setup()
-
-  call docker#edit#read('docker://test/etc/group')
-endf
-
-func! test#docker#browse(...) abort
-  call test#echo('can be browse from docker container')
-  call test#docker#setup()
-
-  :DockerBrowse docker://test/etc
-endf

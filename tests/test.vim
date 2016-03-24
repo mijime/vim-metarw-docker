@@ -17,8 +17,6 @@ func! test#run(...) abort
     call test#source(join([s:script_dir, 'test/**/*.vim'], '/'))
     call test#docker#help()
     call test#docker#catch_err()
-    call test#docker#read()
-    call test#docker#browse()
     call test#echo('success')
   catch
     echoerr v:exception
