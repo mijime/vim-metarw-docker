@@ -15,5 +15,5 @@ function! docker#docker#exec(...)
 endfunction
 
 function! docker#docker#ls(container, path)
-  return split(docker#docker('exec', a:container, 'ls', '-a', a:path), '\n')
+  return split(docker#docker('exec', a:container, 'ls', '-a', '-F', a:path), '\n')
 endfunction
