@@ -63,7 +63,7 @@ endfunction
 
 function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
   let incomplete_fakepath = s:resolve_path(a:incomplete_fakepath)
-  let fragments = matchlist(incomplete_fakepath, '^docker://\([^/]*\)\(/*.*\)$')
+  let fragments = matchlist(incomplete_fakepath, '^docker://\([^/]\+\)\?\(/[^@=*]*\)\?\([@=*]\)\?$')
 
   if len(fragments) <= 1
     echoerr 'Unexpected a:incomplete_fakepath:' string(incomplete_fakepath)
@@ -74,6 +74,7 @@ function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
   let _.given_fakepath = incomplete_fakepath
   let _.pathlist = split(fragments[2], '/\+')
   let _.filename = split(fragments[2], '/\+', 1)[-1]
+  let _.filemode = fragments[3]
 
   if fragments[1] =~ '^i'
     let _.mode = 'images'
@@ -92,8 +93,7 @@ endfunction
 
 function! s:resolve_path(incomplete_fakepath) abort
   let incomplete_fakepath = substitute(a:incomplete_fakepath, '\\', '/', 'g')
-  let incomplete_fakepath = substitute(incomplete_fakepath, '/[^/]*/\.\./\|/\./', '/', 'g')
-  return substitute(incomplete_fakepath, '\(@\|\*\)$', '', 'g')
+  return substitute(incomplete_fakepath, '/[^/]*/\.\./\|/\./', '/', 'g')
 endfunction
 
 let &cpo = s:save_cpo
