@@ -7,16 +7,16 @@ function! metarw#docker#read(fakepath)
   let _ = s:parse_incomplete_fakepath(a:fakepath)
 
   if _.mode == 'container_files'
+    call s:regist_docker_command()
     return s:fetch_docker_container_files(_.pathlist)
+
   elseif _.mode == 'container_file'
+    call s:regist_docker_command()
     return s:fetch_docker_container_file(_.pathlist)
-  elseif _.mode == 'container_log'
-    return s:fetch_docker_container_log(_.pathlist)
-  elseif _.mode == 'container_modes'
-    return ['browse', map(['..', 'files', 'logs'],
-          \ '{"label": v:val, "fakepath": printf("docker://containers/%s/%s/", _.pathlist[0], v:val)}')]
+
   elseif _.mode == 'containers'
     return s:fetch_docker_containers(_.pathlist)
+
   elseif _.mode == 'images'
     return s:fetch_docker_images(_.pathlist)
   endif
@@ -37,11 +37,6 @@ function! s:fetch_docker_container_file(_)
   let srcpath = printf('%s:///%s', a:_[0], s:resolve_path(join(a:_[2:], '/')))
   call docker#docker#cp(srcpath, s:tempfile)
   return ['read', s:tempfile]
-endfunction
-
-function! s:fetch_docker_container_log(_)
-  put = docker#docker('logs', a:_[0])
-  return ['done']
 endfunction
 
 function! s:fetch_docker_container_files(_)
@@ -69,7 +64,7 @@ function! s:parse_docker_image(_)
   return {'label': join(a:_, '  '), 'fakepath': printf('docker://images/%s:%s/', a:_[0], a:_[1])}
 endfunction
 
-function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
+function! s:parse_incomplete_fakepath(incomplete_fakepath)
   let incomplete_fakepath = s:resolve_path(a:incomplete_fakepath)
   let fragments = matchlist(incomplete_fakepath, '^docker://\([^/]\+\)\?\(/[^@=*]*\)\?\([@=*]\)\?$')
 
@@ -93,17 +88,13 @@ function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
     if len(_.pathlist) <= 0
       let _.mode = 'containers'
       return _
-    elseif len(_.pathlist) <= 1
-      let _.mode = 'container_modes'
-      return _
-    elseif _.pathlist[1] =~ '^f' && _.filename == ''
+
+    elseif _.filename == ''
       let _.mode = 'container_files'
       return _
-    elseif _.pathlist[1] =~ '^f'
+
+    else
       let _.mode = 'container_file'
-      return _
-    elseif _.pathlist[1] =~ '^l'
-      let _.mode = 'container_log'
       return _
     endif
   endif
@@ -112,9 +103,24 @@ function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
   return _
 endfunction
 
-function! s:resolve_path(incomplete_fakepath) abort
+function! s:resolve_path(incomplete_fakepath)
   let incomplete_fakepath = substitute(a:incomplete_fakepath, '\\', '/', 'g')
   return substitute(incomplete_fakepath, '/[^/]*/\.\./\|/\./', '/', 'g')
+endfunction
+
+function! s:regist_docker_command()
+  command! -buffer -nargs=1 DockerExec echo s:docker_exec(<f-args>)
+  command! -buffer -nargs=? DockerLogs echo s:docker_logs(<f-args>)
+endfunction
+
+function! s:docker_exec(...)
+  let _ = s:parse_incomplete_fakepath(expand('%'))
+  return docker#apply(['exec', _.pathlist[0]] + a:000)
+endfunction
+
+function! s:docker_logs(...)
+  let _ = s:parse_incomplete_fakepath(expand('%'))
+  return docker#apply(['logs'] + a:000 + [_.pathlist[0]])
 endfunction
 
 let &cpo = s:save_cpo
