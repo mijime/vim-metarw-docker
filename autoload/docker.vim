@@ -11,5 +11,5 @@ func! docker#call(...) abort
 endf
 
 func! docker#apply(...) abort
-  return call('docker#docker', a:000[0] + a:000[1:])
+  return call('docker#call', a:000[0] + a:000[1:])
 endf
