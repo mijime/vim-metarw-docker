@@ -15,14 +15,14 @@ endf
 func! test#docker#catch_err(...) abort
   call test#echo('throw error if use undefine command')
 
-  let l:catch_err = 0
+  let catch_err = 0
   try
     call docker#call('undefine-command')
   catch
-    let l:catch_err = 1
+    let catch_err = 1
   endtry
 
-  if ! l:catch_err
+  if ! catch_err
     throw 'non catched error'
   end
 endf

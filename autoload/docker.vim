@@ -2,12 +2,12 @@ let g:docker#command = get(g:, 'docker#command', 'docker')
 let g:docker#options = get(g:, 'docker#options', [])
 
 func! docker#call(...) abort
-  let l:command = join([g:docker#command] + g:docker#options + a:000)
-  let l:res = system(l:command)
+  let command = join([g:docker#command] + g:docker#options + a:000)
+  let res = system(command)
 
-  if v:shell_error | throw l:res | end
+  if v:shell_error | throw res | end
 
-  return l:res
+  return res
 endf
 
 func! docker#apply(...) abort
