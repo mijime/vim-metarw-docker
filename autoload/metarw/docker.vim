@@ -34,13 +34,13 @@ function! metarw#docker#complete(arglead, cmdline, cursorpos) abort
 endfunction
 
 function! s:fetch_docker_container_file(_) abort
-  let srcpath = printf('%s:///%s', a:_[0], s:resolve_path(join(a:_[2:], '/')))
+  let srcpath = printf('%s:///%s', a:_[0], s:resolve_path(join(a:_[1:], '/')))
   call docker#docker#cp(srcpath, s:tempfile)
   return ['read', s:tempfile]
 endfunction
 
 function! s:fetch_docker_container_files(_) abort
-  let files = docker#docker#ls(a:_[0], join(['//'] + a:_[2:], '/'))
+  let files = docker#docker#ls(a:_[0], join(['//'] + a:_[1:], '/'))
   return ['browse', map(files, 's:parse_docker_container_file(a:_, v:val)')]
 endfunction
 
