@@ -1,15 +1,15 @@
 func! test#docker#setup(...) abort
   try
-    call docker#docker('rm test')
+    call docker#call('rm test')
   catch
   endtry
-  call docker#docker('create', '--name', 'test', 'alpine', 'echo')
+  call docker#call('create', '--name', 'test', 'alpine', 'echo')
 endf
 
 func! test#docker#help(...) abort
   call test#echo('can be call a docker command')
 
-  call docker#docker('help')
+  call docker#call('help')
 endf
 
 func! test#docker#catch_err(...) abort
@@ -17,7 +17,7 @@ func! test#docker#catch_err(...) abort
 
   let l:catch_err = 0
   try
-    call docker#docker('undefine-command')
+    call docker#call('undefine-command')
   catch
     let l:catch_err = 1
   endtry

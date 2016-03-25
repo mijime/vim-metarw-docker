@@ -15,5 +15,5 @@ function! docker#docker#exec(...) abort
 endfunction
 
 function! docker#docker#ls(container, path) abort
-  return split(docker#docker('exec', a:container, 'ls', '-a', '-F', a:path), '\n')
+  return split(docker#call('exec', a:container, 'ls', '-a', '-F', a:path), '\n')
 endfunction

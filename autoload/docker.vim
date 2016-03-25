@@ -1,7 +1,7 @@
 let g:docker#command = get(g:, 'docker#command', 'docker')
 let g:docker#options = get(g:, 'docker#options', [])
 
-func! docker#docker(...) abort
+func! docker#call(...) abort
   let l:command = join([g:docker#command] + g:docker#options + a:000)
   let l:res = system(l:command)
 
