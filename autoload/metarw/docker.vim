@@ -10,16 +10,19 @@ function! metarw#docker#read(fakepath)
     return s:fetch_docker_container_files(_.pathlist)
   elseif _.mode == 'container_file'
     return s:fetch_docker_container_file(_.pathlist)
+  elseif _.mode == 'container_log'
+    return s:fetch_docker_container_log(_.pathlist)
+  elseif _.mode == 'container_modes'
+    return ['browse', map(['..', 'files', 'logs'],
+          \ '{"label": v:val, "fakepath": printf("docker://containers/%s/%s/", _.pathlist[0], v:val)}')]
   elseif _.mode == 'containers'
     return s:fetch_docker_containers(_.pathlist)
   elseif _.mode == 'images'
     return s:fetch_docker_images(_.pathlist)
   endif
 
-  return ['browse', [
-        \ {'label': 'containers', 'fakepath': 'docker://containers'},
-        \ {'label': 'images', 'fakepath': 'docker://images'},
-        \ ]]
+  return ['browse', map(['containers', 'images'],
+        \ '{"label": v:val, "fakepath": printf("docker://%s/", v:val)}')]
 endfunction
 
 function! metarw#docker#write(fakepath, line1, line2, append_p)
@@ -31,13 +34,18 @@ function! metarw#docker#complete(arglead, cmdline, cursorpos)
 endfunction
 
 function! s:fetch_docker_container_file(_)
-  let srcpath = printf('%s:///%s', a:_[0], s:resolve_path(join(a:_[1:], '/')))
+  let srcpath = printf('%s:///%s', a:_[0], s:resolve_path(join(a:_[2:], '/')))
   call docker#docker#cp(srcpath, s:tempfile)
   return ['read', s:tempfile]
 endfunction
 
+function! s:fetch_docker_container_log(_)
+  put = docker#docker('logs', a:_[0])
+  return ['done']
+endfunction
+
 function! s:fetch_docker_container_files(_)
-  let files = docker#docker#ls(a:_[0], join(['//'] + a:_[1:], '/'))
+  let files = docker#docker#ls(a:_[0], join(['//'] + a:_[2:], '/'))
   return ['browse', map(files, 's:parse_docker_container_file(a:_, v:val)')]
 endfunction
 
@@ -78,16 +86,29 @@ function! s:parse_incomplete_fakepath(incomplete_fakepath) abort
 
   if fragments[1] =~ '^i'
     let _.mode = 'images'
-  elseif fragments[1] =~ '^c' && len(_.pathlist) <= 0
-    let _.mode = 'containers'
-  elseif fragments[1] =~ '^c' && _.filename == ''
-    let _.mode = 'container_files'
-  elseif fragments[1] =~ '^c'
-    let _.mode = 'container_file'
-  else
-    let _.mode = ''
+    return _
   endif
 
+  if fragments[1] =~ '^c'
+    if len(_.pathlist) <= 0
+      let _.mode = 'containers'
+      return _
+    elseif len(_.pathlist) <= 1
+      let _.mode = 'container_modes'
+      return _
+    elseif _.pathlist[1] =~ '^f' && _.filename == ''
+      let _.mode = 'container_files'
+      return _
+    elseif _.pathlist[1] =~ '^f'
+      let _.mode = 'container_file'
+      return _
+    elseif _.pathlist[1] =~ '^l'
+      let _.mode = 'container_log'
+      return _
+    endif
+  endif
+
+  let _.mode = ''
   return _
 endfunction
 
