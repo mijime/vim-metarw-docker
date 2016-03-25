@@ -3,11 +3,11 @@ function! docker#docker#cp(...)
 endfunction
 
 function! docker#docker#images(...)
-  return map(split(docker#apply(['images'] + a:000), '\n'), 'split(v:val, "   *")')
+  return map(split(docker#apply(['images'] + a:000), '\n')[1:], 'split(v:val, "   *")')
 endfunction
 
 function! docker#docker#ps(...)
-  return map(split(docker#apply(['ps'] + a:000), '\n'), 'split(v:val, "   *")')
+  return map(split(docker#apply(['ps'] + a:000), '\n')[1:], 'split(v:val, "   *")')
 endfunction
 
 function! docker#docker#exec(...)
